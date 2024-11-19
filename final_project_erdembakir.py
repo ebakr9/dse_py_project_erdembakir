@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import geopandas as gpd
+import plotly.express as px
 
 df = pd.read_csv("C:/Users/Erdem/Desktop/UNIMI/codingfordse/Python/dataset_weather_majorcities.csv")
 
@@ -60,13 +61,11 @@ plt.show()
 # Group by country and year, and count missing values
 missing_by_country = df.groupby(['Country', 'year'])['AverageTemperature'].apply(lambda x: x.isna().sum()).reset_index(name='missing_count')
 
-# Summarize total missing data by country
+#Summarize total missing data by country
 missing_country_summary = missing_by_country.groupby('Country')['missing_count'].sum().reset_index()
 
 # Sort countries by total missing values
 missing_country_summary = missing_country_summary.sort_values(by='missing_count', ascending=False)
-
-# Display top countries with missing data
 print(missing_country_summary.head(10))
 
 
@@ -74,7 +73,6 @@ print(missing_country_summary.head(10))
 plt.figure(figsize=(12, 6))
 sns.barplot(x='missing_count', y='Country', data=missing_country_summary.head(20))
 
-# Add labels and title
 plt.title('Top 20 Countries with the Most Missing Data', fontsize=16)
 plt.xlabel('Total Missing Values')
 plt.ylabel('Country')
@@ -130,7 +128,7 @@ plt.show()
 #Basic visualizations
 plt.figure(figsize=(15, 6))
 plt.subplot(1, 2, 1)
-# Average temperature distribution
+#Average temperature distribution
 sns.histplot(data=df, x='AverageTemperature', bins=50)
 plt.title('Distribution of Average Temperatures')
 plt.xlabel('Temperature')
@@ -172,3 +170,50 @@ df_range = df_range.sort_values('temp_range', ascending=False)
 
 print("\nCities with Largest Temperature Ranges:")
 print(df_range.head(10))
+
+
+
+#MAP VISUALIZATION
+url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip"
+df = pd.read_csv("C:/Users/Erdem/Desktop/UNIMI/codingfordse/Python/dataset_weather_majorcities.csv")
+
+world = gpd.read_file(url)
+
+# Filter data for 2010
+df_2010 = df[df['year'] == 2010]
+
+#average temperature for each city in 2010
+city_temps = df_2010.groupby(['Country', 'City'])['AverageTemperature'].mean().reset_index()
+
+#country averages based on city temperatures
+country_temps = city_temps.groupby('Country')['AverageTemperature'].agg(
+    AverageTemperature=('mean'),
+    CityCount=('count')
+).reset_index()
+
+#Mapping
+fig = px.choropleth(
+    country_temps,
+    locations='Country',
+    locationmode='country names',
+    color='AverageTemperature',
+    hover_name='Country',
+    hover_data={
+        'AverageTemperature': ':.2f',
+        'CityCount': True  # Show number of cities in hover tooltip
+    },
+    color_continuous_scale='RdBu_r',
+    title='Average Temperatures by Country (2010) - Based on City Data',
+    labels={
+        'AverageTemperature': 'Temperature (°C)',
+        'CityCount': 'Number of Cities'
+    }
+)
+fig.update_layout(
+    title_x=0.5,
+    geo=dict(showframe=False, showcoastlines=True),
+    width=1200,
+    height=800
+)
+fig.show()
+

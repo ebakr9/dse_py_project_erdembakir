@@ -13,3 +13,7 @@ def calculate_city_temperatures(df_filtered):
     return df_filtered.groupby(
         ['Country', 'City', 'Latitude_num', 'Longitude_num']
     )['AverageTemperature'].mean().reset_index()
+
+def calculate_country_temperatures(df_filtered):
+    # Group by country and calculate mean temperature
+    return df_filtered.groupby('Country')['AverageTemperature'].mean().reset_index()

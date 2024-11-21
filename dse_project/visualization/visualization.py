@@ -48,3 +48,40 @@ def create_city_temperature_map(city_temps, width=1200, height=800):
     )
     
     return fig
+
+
+def create_country_temperature_map(country_temps, width=1200, height=800):
+    fig = px.choropleth(
+        country_temps,
+        locations='Country', 
+        locationmode='country names',  
+        color='AverageTemperature',
+        hover_data={
+            'Country': True,
+            'AverageTemperature': ':.2f'
+        },
+        color_continuous_scale='RdBu_r',
+        title='Average Temperatures by Country',
+        labels={
+            'AverageTemperature': 'Temperature (°C)',
+            'Country': 'Country'
+        }
+    )
+
+    fig.update_layout(
+        title_x=0.5,
+        geo=dict(
+            showframe=False,
+            showcoastlines=True,
+            projection_type='equirectangular',
+            landcolor='lightgray',
+            oceancolor='aliceblue',
+            showocean=True,
+            coastlinecolor='white',
+            countrycolor='white'
+        ),
+        width=width,
+        height=height
+    )
+    
+    return fig

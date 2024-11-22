@@ -177,5 +177,5 @@ elif analysis_option == "Temperature Map":
                 time.sleep(0.5)
             st.session_state.animation_running = False
         else:
-            update_country_map(st.session_state.current_year, map_container)
+            update_country_map(year, map_container)
 

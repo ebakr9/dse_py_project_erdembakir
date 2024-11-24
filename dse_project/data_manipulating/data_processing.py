@@ -4,6 +4,11 @@ def load_and_prepare_data(file_path):
     df = pd.read_csv(file_path)
     df['dt'] = pd.to_datetime(df['dt'])
     df['year'] = df['dt'].dt.year
+    
+
+    df['Latitude'] = pd.to_numeric(df['Latitude'], errors='coerce')
+    df['Longitude'] = pd.to_numeric(df['Longitude'], errors='coerce')
+    
     return df
 
 def filter_by_year(df, year):

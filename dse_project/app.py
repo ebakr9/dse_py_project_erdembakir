@@ -11,6 +11,7 @@ from visualization.basic_visualizations import (
 )
 from config import DATASETS, SETTINGS
 import time
+from data_manipulating.travel_route import suggest_route
 
 if 'animation_running' not in st.session_state:
     st.session_state.animation_running = False
@@ -222,4 +223,20 @@ elif analysis_option == "Temperature Map":
             st.session_state.animation_running = False
         else:
             update_country_map(year, map_container)
+
+
+cities_df = df[['City', 'Latitude', 'Longitude', 'AverageTemperature']].drop_duplicates()
+st.title("Travel Route Suggestion")
+st.markdown("Suggests the best route from Beijing to Los Angeles based on temperature.")
+
+
+start_city = st.selectbox("Select Starting City", cities_df['City'].unique())
+end_city = st.selectbox("Select Destination City", cities_df['City'].unique())
+
+if st.button("Suggest Route"):
+    if start_city and end_city:
+        route = suggest_route(start_city, end_city, cities_df)
+        st.success(f"Suggested Route: {' -> '.join(route)}")
+    else:
+        st.error("Please select both a starting city and a destination city.")
 

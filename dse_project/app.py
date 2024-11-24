@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
-from data_manipulating.data_processing import load_and_prepare_data, filter_by_year, calculate_city_temperatures, calculate_country_temperatures
+from data_manipulating.data_processing import load_and_prepare_data, filter_by_year, calculate_city_temperatures, calculate_country_temperatures,calculate_state_temperatures
 from data_manipulating.coordinate import process_coordinates
-from visualization.visualization import create_city_temperature_map, create_country_temperature_map
+from visualization.visualization import create_city_temperature_map, create_country_temperature_map,create_state_temperature_map
 from visualization.basic_visualizations import (
     plot_basic_distributions,
     plot_missing_data_distribution,
@@ -49,7 +49,7 @@ with st.spinner('Loading data...'):
 # Analysis options in sidebar
 analysis_option = st.sidebar.selectbox(
     "Choose Analysis",
-    ["Basic Statistics", "Temperature Distribution", "Missing Data Analysis", "Temperature Extremes", "Temperature Map"]
+    ["Basic Statistics", "Temperature Distribution", "Missing Data Analysis", "Temperature Extremes","Temperature Map"]
 )
 
 # Main content area
@@ -93,7 +93,8 @@ elif analysis_option == "Temperature Extremes":
 elif analysis_option == "Temperature Map":
     st.header("Temperature Map")
     
-    if DATASETS[selected_dataset]['needs_preprocess']:
+    
+    if DATASETS[selected_dataset]['type'] == 'city':
         def update_map(year_val, container):
             df_filtered = filter_by_year(df, year_val)
             city_temps = calculate_city_temperatures(df_filtered)
@@ -137,7 +138,50 @@ elif analysis_option == "Temperature Map":
         else:
             # Update map based on current year
             update_map(st.session_state.current_year, map_container)
-    else:
+    
+    elif DATASETS[selected_dataset]['type'] == 'state':
+        def update_state_map(year_val, container):
+            df_filtered = filter_by_year(df, year_val)
+            state_temps = calculate_state_temperatures(df_filtered)
+            fig = create_state_temperature_map(state_temps)
+            fig.update_layout(title=f'Average Temperatures by State ({year_val})')
+            container.plotly_chart(fig, use_container_width=True)
+            st.session_state.current_year = year_val
+        
+        col1, col2, col3 = st.columns([2, 0.5, 0.5])
+        
+        with col1:
+            year = st.slider("Select Year", 
+                           min_value=int(df['year'].min()),
+                           max_value=int(df['year'].max()),
+                           value=st.session_state.current_year,
+                           key='year_slider')
+        
+        with col2:
+            play = st.button("Play", key="play_button")
+        
+        with col3:
+            stop = st.button("Stop", key="stop_button")
+        
+        # Container for the map
+        map_container = st.empty()
+        
+        if play:
+            st.session_state.animation_running = True
+        if stop:
+            st.session_state.animation_running = False
+        
+        if st.session_state.animation_running:
+            for year_val in range(year, int(df['year'].max()) + 1):
+                if not st.session_state.animation_running:
+                    break
+                update_state_map(year_val, map_container)
+                time.sleep(0.5)
+            st.session_state.animation_running = False
+        else:
+            update_state_map(year, map_container)
+    
+    else:  # country type
         def update_country_map(year_val, container):
             df_filtered = filter_by_year(df, year_val)
             country_temps = calculate_country_temperatures(df_filtered)

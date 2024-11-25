@@ -14,6 +14,6 @@ def convert_coordinates(coord_str):
     return value
 
 def process_coordinates(df):
-    df['Latitude_num'] = df['Latitude'].apply(convert_coordinates)
-    df['Longitude_num'] = df['Longitude'].apply(convert_coordinates)
+    df['Latitude'] = df['Latitude'].apply(convert_coordinates)
+    df['Longitude'] = df['Longitude'].apply(convert_coordinates)
     return df

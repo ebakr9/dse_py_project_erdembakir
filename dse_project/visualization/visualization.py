@@ -3,23 +3,23 @@ import plotly.express as px
 def create_city_temperature_map(city_temps, width=1200, height=800):
     fig = px.scatter_geo(
         city_temps,
-        lat='Latitude_num',
-        lon='Longitude_num',
+        lat='Latitude',
+        lon='Longitude',
         color='AverageTemperature',
         hover_name='City',
         hover_data={
             'Country': True,
             'AverageTemperature': ':.2f',
-            'Latitude_num': ':.2f',
-            'Longitude_num': ':.2f'
+            'Latitude': ':.2f',
+            'Longitude': ':.2f'
         },
 
         color_continuous_scale='RdBu_r', 
         title='Average Temperatures by City (2010)',
         labels={
             'AverageTemperature': 'Temperature (°C)',
-            'Latitude_num': 'Latitude',
-            'Longitude_num': 'Longitude'
+            'Latitude': 'Latitude',
+            'Longitude': 'Longitude'
         }
     )
 

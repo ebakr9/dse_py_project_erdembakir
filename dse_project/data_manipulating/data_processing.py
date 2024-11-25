@@ -30,3 +30,41 @@ def calculate_country_temperatures(df_filtered):
 
 def calculate_state_temperatures(df_filtered):
     return df_filtered.groupby(['State', 'Country'])['AverageTemperature'].mean().reset_index()
+
+def analyze_temperature_ranges(df, start_year=None, end_year=None):
+    """
+    Analyze temperature ranges for cities within specified time period.
+    
+    Args:
+        df: DataFrame with temperature data
+        start_year: Start year for analysis (optional)
+        end_year: End year for analysis (optional)
+    
+    Returns:
+        DataFrame with city temperature range statistics
+    """
+    # Filter by year range if specified
+    if start_year and end_year:
+        df = df[(df['year'] >= start_year) & (df['year'] <= end_year)]
+    
+    # Calculate temperature ranges and statistics for each city
+    temp_ranges = df.groupby(['City', 'Latitude_num', 'Longitude_num']).agg({
+        'AverageTemperature': [
+            'min',
+            'max',
+            'mean',
+            'std'
+        ]
+    }).reset_index()
+    
+    # Flatten column names
+    temp_ranges.columns = ['City', 'Latitude', 'Longitude', 
+                          'Min_Temp', 'Max_Temp', 'Mean_Temp', 'Std_Temp']
+    
+    # Calculate temperature range
+    temp_ranges['Temp_Range'] = temp_ranges['Max_Temp'] - temp_ranges['Min_Temp']
+    
+    # Sort by temperature range in descending order
+    temp_ranges = temp_ranges.sort_values('Temp_Range', ascending=False)
+    
+    return temp_ranges

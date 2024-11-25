@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from data_manipulating.data_processing import load_and_prepare_data, filter_by_year, calculate_city_temperatures, calculate_country_temperatures,calculate_state_temperatures
 from data_manipulating.coordinate import process_coordinates
+from data_manipulating.temperature_range import analyze_temperature_ranges
 from visualization.visualization import create_city_temperature_map, create_country_temperature_map,create_state_temperature_map
 from visualization.basic_visualizations import (
     plot_basic_distributions,
@@ -51,7 +52,7 @@ with st.spinner('Loading data...'):
 # Analysis options in sidebar
 analysis_option = st.sidebar.selectbox(
     "Choose Analysis",
-    ["Basic Statistics", "Temperature Distribution", "Missing Data Analysis", "Temperature Extremes","Temperature Map","Travel Route"]
+    ["Basic Statistics", "Temperature Distribution", "Missing Data Analysis", "Temperature Extremes","Temperature Map","Travel Route","Temperature Range"]
 )
 
 # Main content area
@@ -309,3 +310,67 @@ elif analysis_option == "Travel Route":
                     temp_df['AverageTemperature'] = temp_df['AverageTemperature'].round(2)
                     temp_df.columns = ['City', 'Average Temperature (C)']
                     st.dataframe(temp_df)
+elif analysis_option == "Temperature Range":
+    st.header("Temperature Map Visualization")
+    
+    available_years = sorted(df['year'].unique())
+    # Add time period selection
+    col1, col2 = st.columns(2)
+    with col1:
+        start_year = st.selectbox(
+            "Select Start Year", 
+            available_years,
+            index=0
+        )
+    with col2:
+        valid_end_years = [year for year in available_years if year >= start_year]
+        end_year = st.selectbox(
+            "Select End Year", 
+            valid_end_years,
+            index=len(valid_end_years)-1
+        )
+    
+    # Calculate temperature ranges
+    temp_ranges = analyze_temperature_ranges(df, start_year, end_year)
+    
+    #map
+    st.subheader(f"Temperature Ranges ({start_year}-{end_year})")
+    
+    import plotly.express as px
+    
+    # Create map with all cities
+    fig = px.scatter_mapbox(temp_ranges,
+                           lat='Latitude',
+                           lon='Longitude',
+                           hover_name='City',
+                           hover_data={
+                               'Temp_Range': ':.2f',
+                               'Mean_Temp': ':.2f',
+                               'Min_Temp': ':.2f',
+                               'Max_Temp': ':.2f'
+                           },
+                           color='Temp_Range',
+                           size='Temp_Range',
+                           color_continuous_scale='RdYlBu_r',
+                           title='Temperature Ranges by City',
+                           labels={
+                               'Temp_Range': 'Temperature Range (°C)',
+                               'Mean_Temp': 'Mean Temperature (°C)',
+                               'Min_Temp': 'Minimum Temperature (°C)',
+                               'Max_Temp': 'Maximum Temperature (°C)'
+                           },
+                           zoom=1)
+    
+    fig.update_layout(
+        mapbox_style='carto-positron',
+        margin={"r":0,"t":0,"l":0,"b":0},
+        height=600
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+    
+    
+    st.subheader("Cities Ranked by Temperature Range")
+    cities_display = temp_ranges[['City', 'Temp_Range', 'Mean_Temp', 'Min_Temp', 'Max_Temp']]
+    cities_display = cities_display.round(2)
+    st.dataframe(cities_display)

@@ -1,2 +1,1 @@
-# dse_py_project_erdembakir
-Repository for DSE UNIMI Python Module Final Project
+It is a simulation of scenario which one traveller is travelling around the world depending on the temperatures of the nearest 3 cities in the dataset. Also there is a section which shows the temperature changes over time for +200 years, on the world map with max-min temperatures differences. Created in python, and developed for web with streamlit. The files are modularized to make code faster.
